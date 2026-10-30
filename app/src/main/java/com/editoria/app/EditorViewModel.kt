@@ -70,7 +70,7 @@ class EditorViewModel(app: Application) : AndroidViewModel(app) {
                 undoStack.clear()
                 canUndo = false
                 transparent = false
-                setImage(bmp)
+                replaceImage(bmp)
             } catch (e: Throwable) {
                 message = "No se pudo abrir la imagen: ${e.message}"
             }
@@ -112,7 +112,7 @@ class EditorViewModel(app: Application) : AndroidViewModel(app) {
         return bmp
     }
 
-    private fun setImage(b: Bitmap) {
+    private fun replaceImage(b: Bitmap) {
         image = b
         val old = mask
         if (old == null || old.width != b.width || old.height != b.height) {
@@ -129,13 +129,13 @@ class EditorViewModel(app: Application) : AndroidViewModel(app) {
             undoStack.addLast(it)
             while (undoStack.size > 6) undoStack.removeFirst()
         }
-        setImage(newImg)
+        replaceImage(newImg)
         canUndo = undoStack.isNotEmpty()
     }
 
     fun undo() {
         val prev = undoStack.removeLastOrNull() ?: return
-        setImage(prev)
+        replaceImage(prev)
         canUndo = undoStack.isNotEmpty()
     }
 
