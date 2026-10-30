@@ -21,7 +21,30 @@ jobs:
           gradle-version: 8.7
 
       - name: Compilar APK (debug)
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+
+      - name: Mostrar el error en el resumen
+        if: failure()
+        run: |
+          {
+            echo '## Error de compilacion'
+            echo '```'
+            grep -nE "^e: |error:|What went wrong|FAILED|Could not|Execution failed" -A3 build.log | head -n 80 || true
+            echo '```'
+            echo '### Ultimas lineas'
+            echo '```'
+            tail -n 40 build.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Subir APK
         uses: actions/upload-artifact@v4
